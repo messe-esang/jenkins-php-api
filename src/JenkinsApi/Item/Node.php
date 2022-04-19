@@ -1,4 +1,5 @@
 <?php
+
 namespace JenkinsApi\Item;
 
 use JenkinsApi\AbstractItem;
@@ -62,9 +63,9 @@ class Node extends AbstractItem
      */
     public function getExecutors()
     {
-        for ($i = 0; $i < $this->get('numExecutors'); $i++) {
-            yield new Executor($i, $this->_nodeName, $this->getJenkins());
-        }
+        return array_map(function ($i) {
+            return new Executor($i - 1, $this->_nodeName, $this->getJenkins());
+        }, range(1, $this->get('numExecutors')));
     }
 
     /**
@@ -93,7 +94,9 @@ class Node extends AbstractItem
     public function getConfiguration()
     {
         return $this->getJenkins()->get(
-            sprintf('/computer/%s/config.xml', $this->_nodeName), [], [CURLOPT_RETURNTRANSFER => 1]
+            sprintf('/computer/%s/config.xml', $this->_nodeName),
+            [],
+            [CURLOPT_RETURNTRANSFER => 1]
         );
     }
 
