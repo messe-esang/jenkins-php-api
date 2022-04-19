@@ -1,4 +1,5 @@
 <?php
+
 /**
  * JenkinsNew.php
  *
@@ -155,7 +156,7 @@ class Jenkins
      */
     public function get($url, $depth = 1, $params = array(), array $curlOpts = [], $raw = false)
     {
-//        $url = str_replace(' ', '%20', sprintf('%s' . $url . '?depth=' . $depth, $this->_baseUrl));
+        //        $url = str_replace(' ', '%20', sprintf('%s' . $url . '?depth=' . $depth, $this->_baseUrl));
         $url = sprintf('%s', $this->_baseUrl) . $url . '?depth=' . $depth;
         if ($params) {
             foreach ($params as $key => $val) {
@@ -180,7 +181,9 @@ class Jenkins
         if (200 != $response_info['http_code']) {
             throw new JenkinsApiException(
                 sprintf(
-                    'Error during getting information from url %s (Response: %s)', $url, $response_info['http_code']
+                    'Error during getting information from url %s (Response: %s)',
+                    $url,
+                    $response_info['http_code']
                 )
             );
         }
@@ -359,7 +362,9 @@ class Jenkins
         if (curl_errno($curl)) {
             throw new JenkinsApiException(
                 sprintf(
-                    'Error during getting all currently building jobs on %s (%s)', $this->_baseUrl, curl_error($curl)
+                    'Error during getting all currently building jobs on %s (%s)',
+                    $this->_baseUrl,
+                    curl_error($curl)
                 )
             );
         }
@@ -470,19 +475,30 @@ class Jenkins
     {
         $data = $this->get('computer/api/json');
 
-        foreach ($data->computer as $node) {
-            yield new Node($node->displayName, $this);
-        }
+        return array_map(function ($node) {
+            return new Node($node->displayName, $this);
+        }, $data->computer);
     }
+
+    /**
+     *
+     * @var Executor[]
+     */
+    private $executors;
 
     /**
      * @return Executor[]
      */
     public function getExecutors()
     {
-        foreach ($this->getNodes() as $node) {
-            yield $node->getExecutors();
+        if ($this->executors === null) {
+            $this->executors = [];
+            foreach ($this->getNodes() as $node) {
+                $this->executors = array_merge($this->executors, $node->getExecutors());
+            }
         }
+
+        return $this->executors;
     }
 
     /**
