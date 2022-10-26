@@ -34,6 +34,10 @@ class Node extends AbstractItem
         if ($nodeName === 'master') {
             $nodeName = '(master)';
         }
+        
+        if ($nodeName === 'Built-In Node') {
+            $nodeName = '(built-in)';
+        }
 
         $this->_nodeName = $nodeName;
         $this->_jenkins = $jenkins;
